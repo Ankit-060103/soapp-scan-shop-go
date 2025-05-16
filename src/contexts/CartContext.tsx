@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export type Product = {
   id: string;
@@ -17,6 +18,12 @@ export type CartItem = {
   quantity: number;
 };
 
+export type Order = {
+  items: CartItem[];
+  totalPrice: number;
+  orderDate: Date;
+};
+
 type CartContextType = {
   items: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
@@ -26,13 +33,16 @@ type CartContextType = {
   totalItems: number;
   totalPrice: number;
   checkout: () => Promise<void>;
+  lastOrder: Order | null;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Calculate totals
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
@@ -48,12 +58,30 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem("soapp_cart");
       }
     }
+    
+    const savedOrder = localStorage.getItem("soapp_last_order");
+    if (savedOrder) {
+      try {
+        const parsedOrder = JSON.parse(savedOrder);
+        parsedOrder.orderDate = new Date(parsedOrder.orderDate);
+        setLastOrder(parsedOrder);
+      } catch (e) {
+        localStorage.removeItem("soapp_last_order");
+      }
+    }
   }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("soapp_cart", JSON.stringify(items));
   }, [items]);
+  
+  // Save last order to localStorage
+  useEffect(() => {
+    if (lastOrder) {
+      localStorage.setItem("soapp_last_order", JSON.stringify(lastOrder));
+    }
+  }, [lastOrder]);
 
   const addToCart = (product: Product, quantity = 1) => {
     setItems(prevItems => {
@@ -113,12 +141,22 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Simulate processing payment
     await new Promise(resolve => setTimeout(resolve, 2000));
     
+    // Save order details before clearing cart
+    const newOrder: Order = {
+      items: [...items],
+      totalPrice,
+      orderDate: new Date()
+    };
+    
+    setLastOrder(newOrder);
     clearCart();
     
     toast({
       title: "Payment successful!",
       description: "Your order has been processed. Thank you for shopping with SoApp!",
     });
+    
+    navigate("/thank-you");
   };
 
   return (
@@ -130,7 +168,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       clearCart,
       totalItems,
       totalPrice,
-      checkout
+      checkout,
+      lastOrder
     }}>
       {children}
     </CartContext.Provider>
