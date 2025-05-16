@@ -2,20 +2,28 @@
 import React from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Moon, Sun } from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
-    <Toggle 
-      pressed={theme === "dark"} 
-      onPressedChange={toggleTheme} 
+    <Button 
+      variant="outline" 
+      size="icon"
+      onClick={toggleTheme}
       aria-label="Toggle dark mode"
-      className="p-2 rounded-md"
+      className={cn(
+        "relative h-9 w-9 rounded-full transition-colors",
+        isDark ? "bg-sidebar-accent border-sidebar-border text-yellow-200" : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+      )}
     >
-      {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
-    </Toggle>
+      <Sun className={cn("h-4 w-4 absolute transition-all", isDark ? "opacity-0 scale-0" : "opacity-100 scale-100")} />
+      <Moon className={cn("h-4 w-4 absolute transition-all", isDark ? "opacity-100 scale-100" : "opacity-0 scale-0")} />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   );
 };
 

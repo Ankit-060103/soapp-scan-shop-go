@@ -73,14 +73,15 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 196 85% 43%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 196 85% 43%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 20.5%;
+    --sidebar-ring: 196 85% 43%;
   }
 }
 
@@ -91,6 +92,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
 }
 
@@ -99,19 +101,35 @@
     @apply bg-gradient-to-r from-soapp to-soapp-secondary;
   }
   
+  .dark .soapp-gradient {
+    @apply bg-gradient-to-r from-soapp-dark to-soapp-secondary;
+  }
+  
   .soapp-button {
     @apply soapp-gradient text-white font-medium py-2 px-4 rounded-md transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98];
   }
   
   .soapp-card {
-    @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
+    @apply bg-white dark:bg-sidebar-accent rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
   }
 
   .soapp-input {
-    @apply w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-soapp focus:border-transparent outline-none;
+    @apply w-full p-2 border border-gray-300 dark:border-sidebar-border rounded-md focus:ring-2 focus:ring-soapp dark:focus:ring-soapp-dark focus:border-transparent outline-none dark:bg-sidebar-accent dark:text-sidebar-foreground;
   }
   
   .scanning-animation {
     @apply animate-pulse-slow;
+  }
+  
+  .glass-morphism {
+    @apply backdrop-blur-xl bg-white/5 dark:bg-black/20 border border-white/10 dark:border-white/5 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.2)];
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-br from-soapp via-soapp-secondary to-soapp-accent bg-clip-text text-transparent;
+  }
+
+  .dark .text-gradient {
+    @apply bg-gradient-to-br from-soapp via-soapp-light to-soapp-secondary bg-clip-text text-transparent;
   }
 }
