@@ -1,9 +1,9 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CartItem } from "@/contexts/CartContext";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt as ReceiptIcon } from "lucide-react";
+import { Receipt as ReceiptIcon, QrCode } from "lucide-react";
 
 interface ReceiptProps {
   items: CartItem[];
@@ -16,17 +16,40 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate }) => {
   const tax = totalPrice * 0.08;
   const total = totalPrice + tax;
   
+  // Generate receipt data for QR code
+  const receiptData = useMemo(() => {
+    const receiptInfo = {
+      customer: user?.name || "Valued Customer",
+      date: orderDate.toLocaleDateString(),
+      time: orderDate.toLocaleTimeString(),
+      orderId: Math.random().toString(36).substring(2, 10).toUpperCase(),
+      items: items.map(item => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price,
+        total: item.product.price * item.quantity
+      })),
+      subtotal: totalPrice,
+      tax: tax,
+      total: total
+    };
+    return encodeURIComponent(JSON.stringify(receiptInfo));
+  }, [items, totalPrice, tax, total, orderDate, user]);
+
+  // QR code URL - using QR Server API
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${receiptData}`;
+  
   return (
-    <div className="border border-gray-300 rounded-md p-6 bg-white shadow-md max-w-2xl mx-auto">
+    <div className="border border-gray-300 rounded-md p-6 bg-background shadow-md max-w-2xl mx-auto dark:border-gray-700">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">SoApp Receipt</h2>
-          <p className="text-gray-600">Thank you for your purchase!</p>
+          <p className="text-muted-foreground">Thank you for your purchase!</p>
         </div>
-        <ReceiptIcon size={32} className="text-soapp" />
+        <ReceiptIcon size={32} className="text-soapp dark:text-soapp-light" />
       </div>
       
-      <div className="border-t border-b border-gray-300 py-4 mb-6">
+      <div className="border-t border-b border-gray-300 py-4 mb-6 dark:border-gray-700">
         <div className="flex flex-col gap-2">
           <p><span className="font-semibold">Customer:</span> {user?.name || "Valued Customer"}</p>
           <p><span className="font-semibold">Date:</span> {orderDate.toLocaleDateString()}</p>
@@ -70,9 +93,18 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate }) => {
         </TableFooter>
       </Table>
       
+      <div className="mt-8 flex flex-col items-center">
+        <p className="text-sm text-muted-foreground mb-2">Scan to save receipt</p>
+        <img 
+          src={qrCodeUrl} 
+          alt="Receipt QR Code" 
+          className="border border-gray-300 rounded-md p-1 dark:border-gray-700"
+        />
+      </div>
+      
       <div className="mt-8 text-center">
         <p className="text-lg font-medium">Thank you, shop again!</p>
-        <p className="text-sm text-gray-600 mt-2">We appreciate your business</p>
+        <p className="text-sm text-muted-foreground mt-2">We appreciate your business</p>
       </div>
     </div>
   );
