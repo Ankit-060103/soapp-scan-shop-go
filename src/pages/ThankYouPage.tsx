@@ -17,7 +17,8 @@ const ThankYouPage: React.FC = () => {
     if (selectedStore) {
       clearSelectedStore();
     }
-  }, []);
+    // Added proper dependency array
+  }, [selectedStore, clearSelectedStore]);
 
   // If user is not authenticated, redirect to login page
   if (!isAuthenticated) {
