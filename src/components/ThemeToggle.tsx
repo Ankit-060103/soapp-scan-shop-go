@@ -16,12 +16,20 @@ const ThemeToggle: React.FC = () => {
       onClick={toggleTheme}
       aria-label="Toggle dark mode"
       className={cn(
-        "relative h-9 w-9 rounded-full transition-colors",
-        isDark ? "bg-sidebar-accent border-sidebar-border text-yellow-200" : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+        "relative h-9 w-9 rounded-full transition-all duration-300",
+        isDark 
+          ? "bg-sidebar-accent border-sidebar-border text-yellow-300 hover:text-yellow-200 hover:bg-sidebar-accent/80" 
+          : "bg-white/15 border-white/20 text-white hover:bg-white/25"
       )}
     >
-      <Sun className={cn("h-4 w-4 absolute transition-all", isDark ? "opacity-0 scale-0" : "opacity-100 scale-100")} />
-      <Moon className={cn("h-4 w-4 absolute transition-all", isDark ? "opacity-100 scale-100" : "opacity-0 scale-0")} />
+      <Sun className={cn(
+        "h-4 w-4 absolute transition-all duration-300",
+        isDark ? "opacity-0 rotate-90 scale-0" : "opacity-100 rotate-0 scale-100"
+      )} />
+      <Moon className={cn(
+        "h-4 w-4 absolute transition-all duration-300",
+        isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-0"
+      )} />
       <span className="sr-only">Toggle theme</span>
     </Button>
   );

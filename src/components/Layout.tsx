@@ -4,7 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, LogOut, Home, Scan, Store, User, ListOrdered, Mail, Menu, X } from "lucide-react";
+import { 
+  ShoppingCart, 
+  LogOut, 
+  Home, 
+  Scan, 
+  Store, 
+  User, 
+  ListOrdered, 
+  Mail, 
+  Menu, 
+  X, 
+  List, 
+  ChevronDown
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
@@ -17,14 +30,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -47,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Header */}
       <header className="soapp-gradient p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          {/* Mobile menu trigger */}
+          {/* Mobile menu trigger (left uppermost) */}
           <div className="flex items-center gap-3">
             <Sheet>
               <SheetTrigger asChild>
@@ -73,6 +85,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <SidebarNavLink to="/dashboard" icon={<Home size={18} />} label="Dashboard" />
                     <SidebarNavLink to="/select-store" icon={<Store size={18} />} label="Select Store" />
                     <SidebarNavLink to="/scan-product" icon={<Scan size={18} />} label="Scan Products" />
+                    <SidebarNavLink to="/shopping-list" icon={<List size={18} />} label="My List" />
                     <SidebarNavLink to="/profile" icon={<User size={18} />} label="My Profile" />
                     <SidebarNavLink to="/orders" icon={<ListOrdered size={18} />} label="Order History" />
                     <SidebarNavLink to="/support" icon={<Mail size={18} />} label="Customer Support" />
@@ -103,41 +116,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center">
-            <NavigationMenu className="mx-4">
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuLink 
-                    asChild
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    <Link to="/dashboard">Dashboard</Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white focus:bg-white/10">
-                    My Account
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[200px] gap-1 p-2">
-                      <ListItem title="Profile" href="/profile" icon={<User size={18} />}>
-                        Manage your personal information
-                      </ListItem>
-                      <ListItem title="Orders" href="/orders" icon={<ListOrdered size={18} />}>
-                        View your order history
-                      </ListItem>
-                      <ListItem title="Support" href="/support" icon={<Mail size={18} />}>
-                        Get help with your purchases
-                      </ListItem>
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+          {/* Desktop middle navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            <NavLink to="/dashboard" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
+            <NavLink to="/select-store" icon={<Store size={20} />} label="Store" currentPath={location.pathname} />
+            <NavLink to="/scan-product" icon={<Scan size={20} />} label="Scan" currentPath={location.pathname} />
+            <NavLink to="/shopping-list" icon={<List size={20} />} label="My List" currentPath={location.pathname} />
           </div>
           
-          <div className="flex items-center space-x-4">
+          {/* Right side actions */}
+          <div className="flex items-center space-x-3">
             {selectedStore && !isMobile && (
               <span className="text-white hidden sm:inline-block">
                 Store: {selectedStore.name}
@@ -155,9 +143,42 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               )}
             </Link>
             
-            <Button variant="ghost" onClick={logout} className="text-white p-2 hidden md:flex">
-              <LogOut size={20} />
-            </Button>
+            {/* User Account Menu - top rightmost corner */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="p-2 text-white flex items-center gap-1 hover:bg-white/10">
+                  <User size={20} />
+                  <ChevronDown size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                    <User size={16} />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/orders" className="flex items-center gap-2 cursor-pointer">
+                    <ListOrdered size={16} />
+                    <span>Orders</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/support" className="flex items-center gap-2 cursor-pointer">
+                    <Mail size={16} />
+                    <span>Support</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="flex items-center gap-2 cursor-pointer text-destructive">
+                  <LogOut size={16} />
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -174,8 +195,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <NavLink to="/dashboard" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
             <NavLink to="/select-store" icon={<Store size={20} />} label="Store" currentPath={location.pathname} />
             <NavLink to="/scan-product" icon={<Scan size={20} />} label="Scan" currentPath={location.pathname} />
+            <NavLink to="/shopping-list" icon={<List size={20} />} label="List" currentPath={location.pathname} />
             <NavLink to="/cart" icon={<ShoppingCart size={20} />} label="Cart" currentPath={location.pathname} />
-            <NavLink to="/profile" icon={<User size={20} />} label="Profile" currentPath={location.pathname} />
           </div>
         </nav>
       )}
@@ -183,6 +204,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
 
+// Components used in Layout
 interface NavLinkProps {
   to: string;
   icon: React.ReactNode;
@@ -197,7 +219,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, icon, label, currentPath }) => {
     <Link
       to={to}
       className={cn(
-        "flex flex-col items-center px-2 py-1 rounded-md transition-colors",
+        "flex flex-col items-center px-3 py-1.5 rounded-md transition-colors",
         isActive 
           ? "text-soapp font-medium" 
           : "text-muted-foreground hover:text-soapp"
@@ -232,35 +254,5 @@ const SidebarNavLink: React.FC<{to: string, icon: React.ReactNode, label: string
     </Link>
   );
 };
-
-// Navigation menu list item
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
->(({ className, title, icon, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="flex items-center gap-2 text-sm font-medium leading-none">
-            {icon && icon}
-            {title}
-          </div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-});
-ListItem.displayName = "ListItem";
 
 export default Layout;

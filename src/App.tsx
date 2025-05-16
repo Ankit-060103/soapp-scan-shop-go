@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { StoreProvider } from "@/contexts/StoreContext";
 import { ProductProvider } from "@/contexts/ProductContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ListProvider } from "@/contexts/ListContext";
 
 // Pages
 import Home from "./pages/Home";
@@ -22,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
 import SupportPage from "./pages/SupportPage";
+import ShoppingListPage from "./pages/ShoppingListPage";
 
 const queryClient = new QueryClient();
 
@@ -34,21 +36,24 @@ const App = () => (
             <StoreProvider>
               <CartProvider>
                 <ProductProvider>
-                  <Toaster />
-                  <Sonner />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/select-store" element={<SelectStore />} />
-                    <Route path="/scan-product" element={<ScanProduct />} />
-                    <Route path="/product/:productId" element={<ProductDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/thank-you" element={<ThankYouPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/orders" element={<OrdersPage />} />
-                    <Route path="/support" element={<SupportPage />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <ListProvider>
+                    <Toaster />
+                    <Sonner />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/select-store" element={<SelectStore />} />
+                      <Route path="/scan-product" element={<ScanProduct />} />
+                      <Route path="/product/:productId" element={<ProductDetailPage />} />
+                      <Route path="/cart" element={<CartPage />} />
+                      <Route path="/thank-you" element={<ThankYouPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/orders" element={<OrdersPage />} />
+                      <Route path="/support" element={<SupportPage />} />
+                      <Route path="/shopping-list" element={<ShoppingListPage />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </ListProvider>
                 </ProductProvider>
               </CartProvider>
             </StoreProvider>
