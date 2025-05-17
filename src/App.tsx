@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,43 +26,48 @@ import OrdersPage from "./pages/OrdersPage";
 import SupportPage from "./pages/SupportPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <StoreProvider>
-            <CartProvider>
-              <ProductProvider>
-                <ListProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/select-store" element={<SelectStore />} />
-                      <Route path="/scan-product" element={<ScanProduct />} />
-                      <Route path="/product/:productId" element={<ProductDetailPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/thank-you" element={<ThankYouPage />} />
-                      <Route path="/profile" element={<ProfilePage />} />
-                      <Route path="/orders" element={<OrdersPage />} />
-                      <Route path="/support" element={<SupportPage />} />
-                      <Route path="/shopping-list" element={<ShoppingListPage />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </TooltipProvider>
-                </ListProvider>
-              </ProductProvider>
-            </CartProvider>
-          </StoreProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <StoreProvider>
+                <CartProvider>
+                  <ProductProvider>
+                    <ListProvider>
+                      <TooltipProvider>
+                        <Toaster />
+                        <Sonner />
+                        <Routes>
+                          <Route path="/" element={<Home />} />
+                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route path="/select-store" element={<SelectStore />} />
+                          <Route path="/scan-product" element={<ScanProduct />} />
+                          <Route path="/product/:productId" element={<ProductDetailPage />} />
+                          <Route path="/cart" element={<CartPage />} />
+                          <Route path="/thank-you" element={<ThankYouPage />} />
+                          <Route path="/profile" element={<ProfilePage />} />
+                          <Route path="/orders" element={<OrdersPage />} />
+                          <Route path="/support" element={<SupportPage />} />
+                          <Route path="/shopping-list" element={<ShoppingListPage />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </TooltipProvider>
+                    </ListProvider>
+                  </ProductProvider>
+                </CartProvider>
+              </StoreProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;
