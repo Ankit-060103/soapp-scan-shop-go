@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useCart, Order, CartItem, Product } from "@/contexts/CartContext";
+import { useCart, Order, CartItem } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Card, 
@@ -12,14 +12,27 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Receipt from "@/components/checkout/Receipt";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
+import { FileText, Trash2 } from "lucide-react";
 
 // Mock past orders for demonstration
 const MOCK_PAST_ORDERS: Order[] = [
@@ -55,6 +68,10 @@ const MOCK_PAST_ORDERS: Order[] = [
     totalPrice: 9.47,
     orderDate: new Date(2025, 4, 10),
     userId: "user_abc123", // Adding userId to track orders
+    storeInfo: {
+      name: "SoApp Downtown",
+      location: "123 Main St"
+    }
   },
   {
     items: [
@@ -75,11 +92,15 @@ const MOCK_PAST_ORDERS: Order[] = [
     totalPrice: 5.97,
     orderDate: new Date(2025, 4, 8),
     userId: "user_def456", // Different user
+    storeInfo: {
+      name: "SoApp Express",
+      location: "456 Oak Ave"
+    }
   },
 ];
 
 const OrderHistory: React.FC = () => {
-  const { lastOrder } = useCart();
+  const { lastOrder, deleteOrder } = useCart();
   const { toast } = useToast();
   const { user } = useAuth(); // Get current user
   
@@ -102,6 +123,10 @@ const OrderHistory: React.FC = () => {
           if (orderData && orderData.userId === user?.id) {
             // Convert string date back to Date object
             orderData.orderDate = new Date(orderData.orderDate);
+            
+            // Add the local storage key as a property to use for deletion
+            orderData.storageKey = key;
+            
             allStoredOrders.push(orderData);
           }
         } catch (e) {
@@ -133,6 +158,16 @@ const OrderHistory: React.FC = () => {
     });
   };
 
+  const handleDeleteOrder = (storageKey: string) => {
+    if (storageKey) {
+      deleteOrder(storageKey);
+      toast({
+        title: "Order Deleted",
+        description: "The order has been removed from your history."
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {allOrders.length === 0 ? (
@@ -151,7 +186,7 @@ const OrderHistory: React.FC = () => {
                     Order #{Math.random().toString(36).substring(2, 8).toUpperCase()}
                   </CardTitle>
                   <CardDescription>
-                    Placed on {order.orderDate.toLocaleDateString()}
+                    {order.storeInfo?.name ? `Placed at ${order.storeInfo.name}` : 'Online Order'} on {order.orderDate.toLocaleDateString()}
                   </CardDescription>
                 </div>
                 <span className="font-medium">
@@ -177,19 +212,25 @@ const OrderHistory: React.FC = () => {
                     <Button 
                       variant="outline" 
                       onClick={() => setSelectedOrder(order)}
+                      className="flex items-center gap-2"
                     >
+                      <FileText size={16} />
                       View Receipt
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Order Receipt</DialogTitle>
+                      <DialogDescription>
+                        Order placed on {order.orderDate.toLocaleDateString()}
+                      </DialogDescription>
                     </DialogHeader>
                     {selectedOrder && (
                       <Receipt 
                         items={selectedOrder.items}
                         totalPrice={selectedOrder.totalPrice}
                         orderDate={selectedOrder.orderDate}
+                        storeInfo={selectedOrder.storeInfo}
                       />
                     )}
                   </DialogContent>
@@ -197,11 +238,40 @@ const OrderHistory: React.FC = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="border-soapp text-soapp hover:bg-soapp-light"
+                  className="border-soapp text-soapp hover:bg-soapp-light flex items-center gap-2"
                   onClick={() => handleReorderClick(order)}
                 >
+                  <ShoppingCart size={16} />
                   Reorder
                 </Button>
+                
+                {order.storageKey && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="border-red-500 text-red-500 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Order History</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this order from your history? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteOrder(order.storageKey)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </CardContent>
           </Card>

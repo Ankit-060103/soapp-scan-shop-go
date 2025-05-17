@@ -1,8 +1,10 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useStore } from "@/contexts/StoreContext";
 
 // Define the Product type directly in CartContext to avoid circular imports
 export type Product = {
@@ -26,6 +28,10 @@ export type Order = {
   totalPrice: number;
   orderDate: Date;
   userId?: string; // Add userId to track orders per user
+  storeInfo?: {
+    name: string;
+    location: string;
+  };
 };
 
 type CartContextType = {
@@ -40,6 +46,7 @@ type CartContextType = {
   updateQuantity: (id: string, quantity: number) => void; // renamed from updateCartItemQuantity
   clearCart: () => void;
   checkout: () => Promise<void>;
+  deleteOrder: (orderId: string) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -49,6 +56,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { selectedStore } = useStore();
   const navigate = useNavigate();
 
   // Load cart items from localStorage on mount
@@ -161,12 +169,22 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
-    // Create order and include user ID
+    // Store information for the receipt
+    const storeInfo = selectedStore ? {
+      name: selectedStore.name,
+      location: selectedStore.location
+    } : {
+      name: "SoApp Store",
+      location: "Online"
+    };
+
+    // Create order and include user ID and store information
     const newOrder: Order = {
       items: cartItems,
       totalPrice: totalPrice,
       orderDate: new Date(),
-      userId: user?.id // Include the current user's ID
+      userId: user?.id, // Include the current user's ID
+      storeInfo
     };
 
     // Save as last order
@@ -189,6 +207,23 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/thank-you');
   };
 
+  // Function to delete an order from localStorage
+  const deleteOrder = (orderId: string) => {
+    // Remove from localStorage
+    localStorage.removeItem(orderId);
+
+    // If this is the last order, clear it too
+    if (lastOrder && orderId === "soapp_last_order") {
+      setLastOrder(null);
+      localStorage.removeItem("soapp_last_order");
+    }
+
+    toast({
+      title: "Order deleted",
+      description: "The order has been removed from your history.",
+    });
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -203,6 +238,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateQuantity,
         clearCart,
         checkout,
+        deleteOrder,
       }}
     >
       {children}

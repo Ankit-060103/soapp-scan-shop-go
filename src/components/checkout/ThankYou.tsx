@@ -22,7 +22,8 @@ const ThankYou: React.FC = () => {
           <Receipt 
             items={lastOrder.items} 
             totalPrice={lastOrder.totalPrice} 
-            orderDate={lastOrder.orderDate} 
+            orderDate={lastOrder.orderDate}
+            storeInfo={lastOrder.storeInfo}
           />
         </div>
       )}
