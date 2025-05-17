@@ -83,18 +83,46 @@ const OrderHistory: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth(); // Get current user
   
-  // Filter orders for the current logged-in user only
-  const userOrders = lastOrder && lastOrder.userId === user?.id
-    ? [lastOrder] 
-    : [];
+  // Get all orders for the current user from localStorage
+  const getUserOrders = () => {
+    const orders = [];
+    
+    // Add the last order if it exists and belongs to the current user
+    if (lastOrder && lastOrder.userId === user?.id) {
+      orders.push(lastOrder);
+    }
+    
+    // Get all orders from localStorage
+    const allStoredOrders = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('soapp_order_')) {
+        try {
+          const orderData = JSON.parse(localStorage.getItem(key) || '');
+          if (orderData && orderData.userId === user?.id) {
+            // Convert string date back to Date object
+            orderData.orderDate = new Date(orderData.orderDate);
+            allStoredOrders.push(orderData);
+          }
+        } catch (e) {
+          console.error('Error parsing order from localStorage:', e);
+        }
+      }
+    }
+    
+    // Add mock past orders that belong to the current user
+    const mockUserOrders = MOCK_PAST_ORDERS.filter(order => 
+      order.userId === user?.id
+    );
+    
+    return [...orders, ...allStoredOrders, ...mockUserOrders];
+  };
   
-  // Add mock past orders that belong to the current user
-  const mockUserOrders = MOCK_PAST_ORDERS.filter(order => 
-    order.userId === user?.id
-  );
+  // Get all orders for the current user
+  const allOrders = getUserOrders();
   
-  // Combine last order with filtered mock past orders
-  const allOrders = [...userOrders, ...mockUserOrders];
+  // Sort orders by date (newest first)
+  allOrders.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 

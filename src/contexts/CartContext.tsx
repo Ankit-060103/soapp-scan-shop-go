@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
@@ -170,7 +169,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       userId: user?.id // Include the current user's ID
     };
 
+    // Save as last order
     setLastOrder(newOrder);
+    
+    // Also save as a unique order in localStorage with a unique key
+    const orderId = uuidv4();
+    localStorage.setItem(`soapp_order_${orderId}`, JSON.stringify(newOrder));
+    
+    // Clear the cart
     setCartItems([]);
     
     toast({

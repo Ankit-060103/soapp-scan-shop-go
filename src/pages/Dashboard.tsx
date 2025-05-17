@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStore } from "@/contexts/StoreContext";
@@ -25,13 +24,27 @@ const Dashboard: React.FC = () => {
   // Get featured products (first 3)
   const featuredProducts = products.slice(0, 3);
 
+  // Extract first name from user's name or email
+  const getFirstName = () => {
+    if (user?.name) {
+      // Split name by spaces and get the first part
+      return user.name.split(' ')[0];
+    } else if (user?.email) {
+      // If no name, use the part before @ in email
+      return user.email.split('@')[0];
+    }
+    return '';
+  };
+
+  const firstName = getFirstName();
+
   return (
     <Layout>
       <div className="space-y-6">
         {/* Welcome section */}
         <div className="soapp-card bg-soapp-light">
           <h1 className="text-2xl font-bold mb-2">
-            Welcome{user?.name ? `, ${user.name}` : ""}!
+            Welcome{firstName ? `, ${firstName}` : ""}!
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             What would you like to do today?
@@ -91,6 +104,7 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
         
+        {/* Rest of the component remains unchanged */}
         {/* Featured products */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
