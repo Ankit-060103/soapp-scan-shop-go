@@ -14,7 +14,7 @@ const CartItems: React.FC = () => {
     try {
       setIsCheckingOut(true);
       await checkout();
-      // Redirect handled in the checkout function
+      // Redirect is now handled in the checkout function
     } catch (error) {
       console.error("Checkout error:", error);
     } finally {

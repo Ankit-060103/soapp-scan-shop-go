@@ -19,7 +19,11 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate }) => {
   // Generate receipt data for QR code
   const receiptData = useMemo(() => {
     const receiptInfo = {
-      customer: user?.name || "Valued Customer",
+      customer: {
+        name: user?.name || "Valued Customer",
+        email: user?.email || "guest@example.com",
+        id: user?.id || "guest"
+      },
       date: orderDate.toLocaleDateString(),
       time: orderDate.toLocaleTimeString(),
       orderId: Math.random().toString(36).substring(2, 10).toUpperCase(),
@@ -52,6 +56,7 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate }) => {
       <div className="border-t border-b border-gray-300 py-4 mb-6 dark:border-gray-700">
         <div className="flex flex-col gap-2">
           <p><span className="font-semibold">Customer:</span> {user?.name || "Valued Customer"}</p>
+          <p><span className="font-semibold">Email:</span> {user?.email || "guest@example.com"}</p>
           <p><span className="font-semibold">Date:</span> {orderDate.toLocaleDateString()}</p>
           <p><span className="font-semibold">Time:</span> {orderDate.toLocaleTimeString()}</p>
           <p><span className="font-semibold">Order ID:</span> {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>

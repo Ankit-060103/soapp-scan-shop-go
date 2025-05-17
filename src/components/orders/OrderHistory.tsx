@@ -83,15 +83,14 @@ const OrderHistory: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth(); // Get current user
   
-  // Filter orders for the current logged-in user
-  const userOrders = lastOrder 
+  // Filter orders for the current logged-in user only
+  const userOrders = lastOrder && lastOrder.userId === user?.id
     ? [lastOrder] 
     : [];
   
   // Add mock past orders that belong to the current user
   const mockUserOrders = MOCK_PAST_ORDERS.filter(order => 
-    // If the order has a userId and it matches the current user's id, or if we don't have userId info
-    order.userId === user?.id || !order.userId
+    order.userId === user?.id
   );
   
   // Combine last order with filtered mock past orders

@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useStore } from "@/contexts/StoreContext";
 import { useProducts } from "@/contexts/ProductContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type ListItem = {
   id: string;
@@ -27,24 +28,33 @@ export const ListProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [listItems, setListItems] = useState<ListItem[]>([]);
   const { selectedStore } = useStore();
   const { products } = useProducts();
+  const { user } = useAuth();
 
-  // Load saved list from localStorage on mount
+  // Generate a unique storage key for each user
+  const getStorageKey = () => {
+    return user ? `soapp_shopping_list_${user.id}` : 'soapp_shopping_list_guest';
+  };
+
+  // Load saved list from localStorage on mount or when user changes
   useEffect(() => {
-    const savedList = localStorage.getItem("soapp_shopping_list");
+    const savedList = localStorage.getItem(getStorageKey());
     if (savedList) {
       try {
         setListItems(JSON.parse(savedList));
       } catch (e) {
         console.error("Failed to parse saved shopping list:", e);
-        localStorage.removeItem("soapp_shopping_list");
+        localStorage.removeItem(getStorageKey());
       }
+    } else {
+      // Clear the list if no saved list for this user
+      setListItems([]);
     }
-  }, []);
+  }, [user?.id]);
 
   // Save list to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("soapp_shopping_list", JSON.stringify(listItems));
-  }, [listItems]);
+    localStorage.setItem(getStorageKey(), JSON.stringify(listItems));
+  }, [listItems, user?.id]);
 
   const addItem = (name: string, quantity: number) => {
     if (!name.trim()) return;

@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 // Define the Product type directly in CartContext to avoid circular imports
 export type Product = {
@@ -38,7 +40,7 @@ type CartContextType = {
   removeFromCart: (id: string) => void; // renamed from removeItemFromCart
   updateQuantity: (id: string, quantity: number) => void; // renamed from updateCartItemQuantity
   clearCart: () => void;
-  checkout: () => void;
+  checkout: () => Promise<void>;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -47,6 +49,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Load cart items from localStorage on mount
   useEffect(() => {
@@ -77,7 +81,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [cartItems]);
   
   useEffect(() => {
-    localStorage.setItem("soapp_last_order", JSON.stringify(lastOrder));
+    if (lastOrder) {
+      localStorage.setItem("soapp_last_order", JSON.stringify(lastOrder));
+    }
   }, [lastOrder]);
 
   const addToCart = (product: Product, quantity: number) => {
@@ -146,7 +152,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const totalItems = calculateTotalItems();
   const totalPrice = subtotal + shippingCost;
 
-  const checkout = () => {
+  const checkout = async () => {
     if (cartItems.length === 0) {
       toast({
         variant: "destructive",
@@ -156,11 +162,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
-    // Mock order confirmation
+    // Create order and include user ID
     const newOrder: Order = {
       items: cartItems,
       totalPrice: totalPrice,
       orderDate: new Date(),
+      userId: user?.id // Include the current user's ID
     };
 
     setLastOrder(newOrder);
@@ -170,6 +177,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       title: "Order confirmed",
       description: "Thank you for your order!",
     });
+
+    // Add a short delay before redirecting so the toast notification is visible
+    await new Promise(resolve => setTimeout(resolve, 500));
+    navigate('/thank-you');
   };
 
   return (
