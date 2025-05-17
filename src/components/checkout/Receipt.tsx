@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CartItem } from "@/contexts/CartContext";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt as ReceiptIcon, QrCode, Download, FileText } from "lucide-react";
+import { Receipt as ReceiptIcon, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/contexts/StoreContext";
 import html2canvas from "html2canvas";
