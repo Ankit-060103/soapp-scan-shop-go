@@ -1,12 +1,11 @@
+
 import React, { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CartItem } from "@/contexts/CartContext";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt as ReceiptIcon, FileText } from "lucide-react";
+import { ReceiptText, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/contexts/StoreContext";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 interface ReceiptProps {
   items: CartItem[];
@@ -60,40 +59,54 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
   // QR code URL - using QR Server API
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${receiptData}`;
   
-  // Function to download receipt as PDF
-  const handleDownloadPDF = async () => {
-    const receiptElement = document.getElementById('receipt-to-download');
-    if (!receiptElement) return;
+  // Function to download receipt as text file
+  const handleDownloadText = () => {
+    // Generate text content for receipt
+    const textContent = [
+      "SoApp Receipt",
+      "=============",
+      "",
+      `Store: ${store.name}`,
+      `Location: ${store.location}`,
+      `Customer: ${user?.name || "Valued Customer"}`,
+      `Email: ${user?.email || "guest@example.com"}`,
+      `Date: ${orderDate.toLocaleDateString()}`,
+      `Time: ${orderDate.toLocaleTimeString()}`,
+      `Order ID: ${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      "",
+      "Items:",
+      "------",
+      ...items.map(item => `${item.quantity}x ${item.product.name} - $${item.product.price.toFixed(2)} = $${(item.product.price * item.quantity).toFixed(2)}`),
+      "",
+      `Subtotal: $${totalPrice.toFixed(2)}`,
+      `Tax (8%): $${tax.toFixed(2)}`,
+      `Total: $${total.toFixed(2)}`,
+      "",
+      "Thank you, shop again!",
+      "We appreciate your business"
+    ].join('\n');
     
-    try {
-      const canvas = await html2canvas(receiptElement, {
-        scale: 2,
-        logging: false,
-        useCORS: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`SoApp_Receipt_${new Date().toISOString().slice(0, 10)}.pdf`);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-    }
+    // Create a Blob with the text content
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    
+    // Create a download link and trigger the download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SoApp_Receipt_${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
   
   return (
     <div className="relative">
       <div className="mb-4 flex justify-end">
         <Button 
-          onClick={handleDownloadPDF}
+          onClick={handleDownloadText}
           variant="outline" 
           className="flex items-center gap-2"
         >
@@ -108,7 +121,7 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
             <h2 className="text-2xl font-bold">SoApp Receipt</h2>
             <p className="text-muted-foreground">Thank you for your purchase!</p>
           </div>
-          <ReceiptIcon size={32} className="text-soapp dark:text-soapp-light" />
+          <ReceiptText size={32} className="text-soapp dark:text-soapp-light" />
         </div>
         
         <div className="border-t border-b border-gray-300 py-4 mb-6 dark:border-gray-700">
