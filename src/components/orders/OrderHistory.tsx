@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useCart, Order, CartItem } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,7 +31,7 @@ import Receipt from "@/components/checkout/Receipt";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
-import { FileText, Trash2 } from "lucide-react";
+import { FileText, Trash2, ShoppingCart } from "lucide-react";
 
 // Mock past orders for demonstration
 const MOCK_PAST_ORDERS: Order[] = [
