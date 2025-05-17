@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { useCart, Order } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Card, 
   CardContent, 
@@ -50,6 +51,7 @@ const MOCK_PAST_ORDERS: Order[] = [
     ],
     totalPrice: 9.47,
     orderDate: new Date(2025, 4, 10),
+    userId: "user_abc123", // Adding userId to track orders
   },
   {
     items: [
@@ -68,18 +70,29 @@ const MOCK_PAST_ORDERS: Order[] = [
     ],
     totalPrice: 5.97,
     orderDate: new Date(2025, 4, 8),
+    userId: "user_def456", // Different user
   },
 ];
 
 const OrderHistory: React.FC = () => {
   const { lastOrder } = useCart();
   const { toast } = useToast();
+  const { user } = useAuth(); // Get current user
   
-  // Combine last order with mock past orders
-  const allOrders = lastOrder 
-    ? [lastOrder, ...MOCK_PAST_ORDERS] 
-    : MOCK_PAST_ORDERS;
-
+  // Filter orders for the current logged-in user
+  const userOrders = lastOrder 
+    ? [lastOrder] 
+    : [];
+  
+  // Add mock past orders that belong to the current user
+  const mockUserOrders = MOCK_PAST_ORDERS.filter(order => 
+    // If the order has a userId and it matches the current user's id, or if we don't have userId info
+    order.userId === user?.id || !order.userId
+  );
+  
+  // Combine last order with filtered mock past orders
+  const allOrders = [...userOrders, ...mockUserOrders];
+  
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const handleReorderClick = (order: Order) => {
@@ -94,7 +107,7 @@ const OrderHistory: React.FC = () => {
       {allOrders.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No orders found.</p>
+            <p className="text-center text-muted-foreground">No orders found for your account.</p>
           </CardContent>
         </Card>
       ) : (

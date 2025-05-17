@@ -116,13 +116,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
           </div>
           
-          {/* Desktop middle navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            <NavLink to="/dashboard" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
-            <NavLink to="/select-store" icon={<Store size={20} />} label="Store" currentPath={location.pathname} />
-            <NavLink to="/scan-product" icon={<Scan size={20} />} label="Scan" currentPath={location.pathname} />
-            <NavLink to="/shopping-list" icon={<List size={20} />} label="My List" currentPath={location.pathname} />
-          </div>
+          {/* Desktop middle navigation - We're removing this as navigation is now at bottom */}
           
           {/* Right side actions */}
           <div className="flex items-center space-x-3">
@@ -188,9 +182,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </main>
 
-      {/* Footer navigation */}
+      {/* Footer navigation - now this will be the main navigation for all devices */}
       {isAuthenticated && (
-        <nav className="sticky bottom-0 w-full bg-background border-t border-gray-200 p-2 shadow-lg md:hidden dark:border-gray-800">
+        <nav className="sticky bottom-0 w-full bg-background border-t border-gray-200 p-2 shadow-lg dark:border-gray-800">
           <div className="container mx-auto flex justify-between items-center">
             <NavLink to="/dashboard" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
             <NavLink to="/select-store" icon={<Store size={20} />} label="Store" currentPath={location.pathname} />

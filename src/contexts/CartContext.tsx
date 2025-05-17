@@ -1,19 +1,10 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { Product } from "@/contexts/ProductContext";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
-
-export type Product = {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  imageUrl: string;
-  category: string;
-  inStock: boolean;
-};
+import { v4 as uuidv4 } from 'uuid';
 
 export type CartItem = {
+  id: string;
   product: Product;
   quantity: number;
 };
@@ -22,155 +13,170 @@ export type Order = {
   items: CartItem[];
   totalPrice: number;
   orderDate: Date;
+  userId?: string; // Add userId to track orders per user
 };
 
 type CartContextType = {
-  items: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, newQuantity: number) => void;
-  clearCart: () => void;
+  cartItems: CartItem[];
   totalItems: number;
+  subtotal: number;
+  shippingCost: number;
   totalPrice: number;
-  checkout: () => Promise<void>;
   lastOrder: Order | null;
+  addItemToCart: (product: Product, quantity: number) => void;
+  removeItemFromCart: (id: string) => void;
+  updateCartItemQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  checkout: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Calculate totals
-  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
-  const totalPrice = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-
-  // Load cart from localStorage on mount
+  // Load cart items from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("soapp_cart");
-    if (savedCart) {
+    const storedCart = localStorage.getItem("soapp_cart");
+    if (storedCart) {
       try {
-        setItems(JSON.parse(savedCart));
+        setCartItems(JSON.parse(storedCart));
       } catch (e) {
+        console.error("Failed to parse cart from localStorage:", e);
         localStorage.removeItem("soapp_cart");
       }
     }
     
-    const savedOrder = localStorage.getItem("soapp_last_order");
-    if (savedOrder) {
+    const storedOrder = localStorage.getItem("soapp_last_order");
+    if (storedOrder) {
       try {
-        const parsedOrder = JSON.parse(savedOrder);
-        parsedOrder.orderDate = new Date(parsedOrder.orderDate);
-        setLastOrder(parsedOrder);
+        setLastOrder(JSON.parse(storedOrder));
       } catch (e) {
+        console.error("Failed to parse last order from localStorage:", e);
         localStorage.removeItem("soapp_last_order");
       }
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart items to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("soapp_cart", JSON.stringify(items));
-  }, [items]);
+    localStorage.setItem("soapp_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
   
-  // Save last order to localStorage
   useEffect(() => {
-    if (lastOrder) {
-      localStorage.setItem("soapp_last_order", JSON.stringify(lastOrder));
-    }
+    localStorage.setItem("soapp_last_order", JSON.stringify(lastOrder));
   }, [lastOrder]);
 
-  const addToCart = (product: Product, quantity = 1) => {
-    setItems(prevItems => {
-      // Check if the product is already in the cart
-      const existingItemIndex = prevItems.findIndex(item => item.product.id === product.id);
+  const addItemToCart = (product: Product, quantity: number) => {
+    const existingItem = cartItems.find((item) => item.product.id === product.id);
 
-      if (existingItemIndex !== -1) {
-        // Update quantity of existing item
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + quantity
-        };
-        return updatedItems;
-      } else {
-        // Add new item
-        return [...prevItems, { product, quantity }];
+    if (existingItem) {
+      updateCartItemQuantity(existingItem.id, existingItem.quantity + quantity);
+    } else {
+      const newItem: CartItem = {
+        id: uuidv4(),
+        product,
+        quantity,
+      };
+      setCartItems((prevItems) => [...prevItems, newItem]);
+      toast({
+        title: "Item Added",
+        description: `${product.name} added to cart.`,
+      });
+    }
+  };
+
+  const removeItemFromCart = (id: string) => {
+    setCartItems((prevItems) => {
+      const itemToRemove = prevItems.find(item => item.id === id);
+      if (itemToRemove) {
+        toast({
+          title: "Item Removed",
+          description: `${itemToRemove.product.name} removed from cart.`,
+        });
       }
-    });
-
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
+      return prevItems.filter((item) => item.id !== id);
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.product.id !== productId));
-    
-    toast({
-      title: "Removed from cart",
-      description: "Item has been removed from your cart.",
-    });
-  };
-
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      removeFromCart(productId);
+  const updateCartItemQuantity = (id: string, quantity: number) => {
+    if (quantity < 1) {
+      removeItemFromCart(id);
       return;
     }
-
-    setItems(prevItems => 
-      prevItems.map(item => 
-        item.product.id === productId 
-          ? { ...item, quantity: newQuantity } 
-          : item
+    
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, quantity } : item
       )
     );
   };
 
   const clearCart = () => {
-    setItems([]);
+    setCartItems([]);
+    toast({
+      title: "Cart Cleared",
+      description: "All items removed from cart.",
+    });
   };
 
-  const checkout = async () => {
-    // In a real app, this would connect to a payment processor
-    // Simulate processing payment
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Save order details before clearing cart
+  const calculateSubtotal = () => {
+    return cartItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
+  };
+
+  const calculateTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const subtotal = calculateSubtotal();
+  const shippingCost = subtotal > 50 || calculateTotalItems() === 0 ? 0 : 5;
+  const totalItems = calculateTotalItems();
+  const totalPrice = subtotal + shippingCost;
+
+  const checkout = () => {
+    if (cartItems.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Cart is empty",
+        description: "Add items to your cart before checking out.",
+      });
+      return;
+    }
+
+    // Mock order confirmation
     const newOrder: Order = {
-      items: [...items],
-      totalPrice,
-      orderDate: new Date()
+      items: cartItems,
+      totalPrice: totalPrice,
+      orderDate: new Date(),
     };
-    
+
     setLastOrder(newOrder);
-    clearCart();
+    setCartItems([]);
     
     toast({
-      title: "Payment successful!",
-      description: "Your order has been processed. Thank you for shopping with SoApp!",
+      title: "Order confirmed",
+      description: "Thank you for your order!",
     });
-    
-    navigate("/thank-you");
   };
 
   return (
-    <CartContext.Provider value={{
-      items,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      totalItems,
-      totalPrice,
-      checkout,
-      lastOrder
-    }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        totalItems,
+        subtotal,
+        shippingCost,
+        totalPrice,
+        lastOrder,
+        addItemToCart,
+        removeItemFromCart,
+        updateCartItemQuantity,
+        clearCart,
+        checkout,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -183,3 +189,4 @@ export const useCart = (): CartContextType => {
   }
   return context;
 };
+
