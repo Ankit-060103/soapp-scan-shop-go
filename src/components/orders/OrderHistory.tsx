@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useCart, Order } from "@/contexts/CartContext";
+import { useCart, Order, CartItem, Product } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Card, 
@@ -19,12 +19,14 @@ import {
 import Receipt from "@/components/checkout/Receipt";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock past orders for demonstration
 const MOCK_PAST_ORDERS: Order[] = [
   {
     items: [
       {
+        id: uuidv4(),
         product: {
           id: "p1",
           name: "Organic Bananas",
@@ -37,6 +39,7 @@ const MOCK_PAST_ORDERS: Order[] = [
         quantity: 2,
       },
       {
+        id: uuidv4(),
         product: {
           id: "p2",
           name: "Whole Milk",
@@ -56,6 +59,7 @@ const MOCK_PAST_ORDERS: Order[] = [
   {
     items: [
       {
+        id: uuidv4(),
         product: {
           id: "p3",
           name: "Avocado",

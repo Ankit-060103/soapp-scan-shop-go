@@ -1,7 +1,18 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { Product } from "@/contexts/ProductContext";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
+
+// Define the Product type directly in CartContext to avoid circular imports
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  imageUrl: string;
+  category: string;
+  inStock: boolean;
+};
 
 export type CartItem = {
   id: string;
@@ -23,9 +34,9 @@ type CartContextType = {
   shippingCost: number;
   totalPrice: number;
   lastOrder: Order | null;
-  addItemToCart: (product: Product, quantity: number) => void;
-  removeItemFromCart: (id: string) => void;
-  updateCartItemQuantity: (id: string, quantity: number) => void;
+  addToCart: (product: Product, quantity: number) => void; // renamed from addItemToCart
+  removeFromCart: (id: string) => void; // renamed from removeItemFromCart
+  updateQuantity: (id: string, quantity: number) => void; // renamed from updateCartItemQuantity
   clearCart: () => void;
   checkout: () => void;
 };
@@ -69,11 +80,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem("soapp_last_order", JSON.stringify(lastOrder));
   }, [lastOrder]);
 
-  const addItemToCart = (product: Product, quantity: number) => {
+  const addToCart = (product: Product, quantity: number) => {
     const existingItem = cartItems.find((item) => item.product.id === product.id);
 
     if (existingItem) {
-      updateCartItemQuantity(existingItem.id, existingItem.quantity + quantity);
+      updateQuantity(existingItem.id, existingItem.quantity + quantity);
     } else {
       const newItem: CartItem = {
         id: uuidv4(),
@@ -88,7 +99,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const removeItemFromCart = (id: string) => {
+  const removeFromCart = (id: string) => {
     setCartItems((prevItems) => {
       const itemToRemove = prevItems.find(item => item.id === id);
       if (itemToRemove) {
@@ -101,9 +112,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  const updateCartItemQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number) => {
     if (quantity < 1) {
-      removeItemFromCart(id);
+      removeFromCart(id);
       return;
     }
     
@@ -170,9 +181,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         shippingCost,
         totalPrice,
         lastOrder,
-        addItemToCart,
-        removeItemFromCart,
-        updateCartItemQuantity,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
         clearCart,
         checkout,
       }}
@@ -189,4 +200,3 @@ export const useCart = (): CartContextType => {
   }
   return context;
 };
-

@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
 
 const CartItems: React.FC = () => {
-  const { items, removeFromCart, updateQuantity, totalItems, totalPrice, checkout } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, totalItems, totalPrice, checkout } = useCart();
   const [isCheckingOut, setIsCheckingOut] = React.useState(false);
 
   const handleCheckout = async () => {
-    if (items.length === 0) return;
+    if (cartItems.length === 0) return;
     
     try {
       setIsCheckingOut(true);
@@ -22,7 +22,7 @@ const CartItems: React.FC = () => {
     }
   };
 
-  if (items.length === 0) {
+  if (cartItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-gray-500">
         <ShoppingCart size={64} className="mb-4" />
@@ -38,8 +38,8 @@ const CartItems: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        {items.map(item => (
-          <div key={item.product.id} className="soapp-card flex flex-col sm:flex-row items-center gap-4">
+        {cartItems.map(item => (
+          <div key={item.id} className="soapp-card flex flex-col sm:flex-row items-center gap-4">
             <img
               src={item.product.imageUrl}
               alt={item.product.name}
@@ -53,14 +53,14 @@ const CartItems: React.FC = () => {
             
             <div className="flex items-center space-x-2">
               <button 
-                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                onClick={() => updateQuantity(item.id, item.quantity - 1)}
                 className="bg-gray-200 p-1.5 rounded-full hover:bg-gray-300 text-gray-700"
               >
                 <Minus size={14} />
               </button>
               <span className="text-lg font-medium w-8 text-center">{item.quantity}</span>
               <button 
-                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
                 className="bg-gray-200 p-1.5 rounded-full hover:bg-gray-300 text-gray-700"
               >
                 <Plus size={14} />
@@ -72,7 +72,7 @@ const CartItems: React.FC = () => {
             </div>
             
             <button
-              onClick={() => removeFromCart(item.product.id)}
+              onClick={() => removeFromCart(item.id)}
               className="text-red-500 hover:text-red-700 p-2"
             >
               <Trash2 size={20} />
