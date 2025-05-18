@@ -26,7 +26,7 @@ export type CartItem = {
 export type Order = {
   items: CartItem[];
   totalPrice: number;
-  orderDate: Date;
+  orderDate: Date | string; // Accept both Date and string
   userId?: string; // Add userId to track orders per user
   storeInfo?: {
     name: string;
@@ -49,6 +49,14 @@ type CartContextType = {
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+// Helper function to ensure we have a valid Date object
+const ensureDate = (dateOrString: Date | string): Date => {
+  if (dateOrString instanceof Date) {
+    return dateOrString;
+  }
+  return new Date(dateOrString);
+};
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -73,7 +81,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedOrder = localStorage.getItem("soapp_last_order");
     if (storedOrder) {
       try {
-        setLastOrder(JSON.parse(storedOrder));
+        const parsedOrder = JSON.parse(storedOrder);
+        // Ensure orderDate is a proper Date object
+        if (parsedOrder && parsedOrder.orderDate) {
+          parsedOrder.orderDate = ensureDate(parsedOrder.orderDate);
+        }
+        setLastOrder(parsedOrder);
       } catch (e) {
         console.error("Failed to parse last order from localStorage:", e);
         localStorage.removeItem("soapp_last_order");

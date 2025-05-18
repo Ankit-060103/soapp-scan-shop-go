@@ -10,7 +10,7 @@ import { useStore } from "@/contexts/StoreContext";
 interface ReceiptProps {
   items: CartItem[];
   totalPrice: number;
-  orderDate: Date;
+  orderDate: Date | string;
   storeInfo?: {
     name: string;
     location: string;
@@ -28,6 +28,9 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
     location: "Online" 
   };
   
+  // Ensure orderDate is a Date object
+  const ensuredOrderDate = orderDate instanceof Date ? orderDate : new Date(orderDate);
+  
   // Generate receipt data for QR code
   const receiptData = useMemo(() => {
     const receiptInfo = {
@@ -40,8 +43,8 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
         email: user?.email || "guest@example.com",
         id: user?.id || "guest"
       },
-      date: orderDate.toLocaleDateString(),
-      time: orderDate.toLocaleTimeString(),
+      date: ensuredOrderDate.toLocaleDateString(),
+      time: ensuredOrderDate.toLocaleTimeString(),
       orderId: Math.random().toString(36).substring(2, 10).toUpperCase(),
       items: items.map(item => ({
         name: item.product.name,
@@ -54,7 +57,7 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
       total: total
     };
     return encodeURIComponent(JSON.stringify(receiptInfo));
-  }, [items, totalPrice, tax, total, orderDate, user, store]);
+  }, [items, totalPrice, tax, total, ensuredOrderDate, user, store]);
 
   // QR code URL - using QR Server API
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${receiptData}`;
@@ -70,8 +73,8 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
       `Location: ${store.location}`,
       `Customer: ${user?.name || "Valued Customer"}`,
       `Email: ${user?.email || "guest@example.com"}`,
-      `Date: ${orderDate.toLocaleDateString()}`,
-      `Time: ${orderDate.toLocaleTimeString()}`,
+      `Date: ${ensuredOrderDate.toLocaleDateString()}`,
+      `Time: ${ensuredOrderDate.toLocaleTimeString()}`,
       `Order ID: ${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
       "",
       "Items:",
@@ -130,8 +133,8 @@ const Receipt: React.FC<ReceiptProps> = ({ items, totalPrice, orderDate, storeIn
             <p><span className="font-semibold">Location:</span> {store.location}</p>
             <p><span className="font-semibold">Customer:</span> {user?.name || "Valued Customer"}</p>
             <p><span className="font-semibold">Email:</span> {user?.email || "guest@example.com"}</p>
-            <p><span className="font-semibold">Date:</span> {orderDate.toLocaleDateString()}</p>
-            <p><span className="font-semibold">Time:</span> {orderDate.toLocaleTimeString()}</p>
+            <p><span className="font-semibold">Date:</span> {ensuredOrderDate.toLocaleDateString()}</p>
+            <p><span className="font-semibold">Time:</span> {ensuredOrderDate.toLocaleTimeString()}</p>
             <p><span className="font-semibold">Order ID:</span> {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
           </div>
         </div>
