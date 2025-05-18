@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useCart, Order, CartItem } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,22 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import Receipt from "@/components/checkout/Receipt";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
-import { FileText, Trash2, ShoppingCart } from "lucide-react";
+import { FileText, ShoppingCart } from "lucide-react";
 
 // Mock past orders for demonstration
 const MOCK_PAST_ORDERS: Order[] = [
@@ -99,7 +89,7 @@ const MOCK_PAST_ORDERS: Order[] = [
 ];
 
 const OrderHistory: React.FC = () => {
-  const { lastOrder, deleteOrder } = useCart();
+  const { lastOrder } = useCart();
   const { toast } = useToast();
   const { user } = useAuth(); // Get current user
   
@@ -155,16 +145,6 @@ const OrderHistory: React.FC = () => {
       title: "Coming Soon",
       description: "Reorder functionality will be available soon!",
     });
-  };
-
-  const handleDeleteOrder = (storageKey: string) => {
-    if (storageKey) {
-      deleteOrder(storageKey);
-      toast({
-        title: "Order Deleted",
-        description: "The order has been removed from your history."
-      });
-    }
   };
 
   return (
@@ -243,34 +223,6 @@ const OrderHistory: React.FC = () => {
                   <ShoppingCart size={16} />
                   Reorder
                 </Button>
-                
-                {order.storageKey && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="border-red-500 text-red-500 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <Trash2 size={16} />
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Order History</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this order from your history? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteOrder(order.storageKey)}>
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
               </div>
             </CardContent>
           </Card>

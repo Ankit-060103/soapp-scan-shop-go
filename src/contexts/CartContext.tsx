@@ -46,7 +46,6 @@ type CartContextType = {
   updateQuantity: (id: string, quantity: number) => void; // renamed from updateCartItemQuantity
   clearCart: () => void;
   checkout: () => Promise<void>;
-  deleteOrder: (orderId: string) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -207,23 +206,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/thank-you');
   };
 
-  // Function to delete an order from localStorage
-  const deleteOrder = (orderId: string) => {
-    // Remove from localStorage
-    localStorage.removeItem(orderId);
-
-    // If this is the last order, clear it too
-    if (lastOrder && orderId === "soapp_last_order") {
-      setLastOrder(null);
-      localStorage.removeItem("soapp_last_order");
-    }
-
-    toast({
-      title: "Order deleted",
-      description: "The order has been removed from your history.",
-    });
-  };
-
   return (
     <CartContext.Provider
       value={{
@@ -238,7 +220,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateQuantity,
         clearCart,
         checkout,
-        deleteOrder,
       }}
     >
       {children}
