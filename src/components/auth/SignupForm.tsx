@@ -41,7 +41,21 @@ const SignupForm: React.FC = () => {
     try {
       setIsLoading(true);
       await signup(email, password, name);
-      navigate("/dashboard");
+      
+      // Change: Redirect to login page instead of dashboard
+      toast({
+        title: "Account created!",
+        description: "Please log in with your new credentials.",
+      });
+      
+      // Clear form fields
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      
+      // Set the active tab to login on the home page
+      navigate("/", { state: { activeTab: "login" } });
     } catch (error) {
       console.error("Signup error:", error);
     } finally {

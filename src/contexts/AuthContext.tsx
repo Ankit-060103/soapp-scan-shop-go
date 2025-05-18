@@ -65,15 +65,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Create mock user but don't log in automatically
       const mockUser = {
         id: "user_" + Math.random().toString(36).substr(2, 9),
         email: email,
         name: name,
       };
       
-      setUser(mockUser);
-      localStorage.setItem("soapp_user", JSON.stringify(mockUser));
+      // Don't set the user in state anymore
+      // Don't save to localStorage
       
+      // Just notify of success
       toast({
         title: "Account created!",
         description: "Your account has been successfully created.",
