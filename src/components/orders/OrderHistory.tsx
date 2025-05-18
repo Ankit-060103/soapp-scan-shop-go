@@ -96,10 +96,14 @@ const OrderHistory: React.FC = () => {
   // Get all orders for the current user from localStorage
   const getUserOrders = () => {
     const orders = [];
+    const processedKeys = new Set(); // Track keys we've already processed
     
     // Add the last order if it exists and belongs to the current user
+    // Only if we haven't already processed it from localStorage
     if (lastOrder && lastOrder.userId === user?.id) {
       orders.push(lastOrder);
+      // Add "soapp_last_order" to processed keys to avoid duplicates
+      processedKeys.add("soapp_last_order");
     }
     
     // Get all orders from localStorage
@@ -113,10 +117,19 @@ const OrderHistory: React.FC = () => {
             // Convert string date back to Date object
             orderData.orderDate = new Date(orderData.orderDate);
             
-            // Add the local storage key as a property to use for deletion
+            // Add the local storage key as a property to use for tracking
             orderData.storageKey = key;
             
-            allStoredOrders.push(orderData);
+            // Check if this is already in our list from lastOrder
+            const isDuplicate = orders.some(order => 
+              order.orderDate.getTime() === orderData.orderDate.getTime() && 
+              order.totalPrice === orderData.totalPrice &&
+              order.userId === orderData.userId
+            );
+            
+            if (!isDuplicate) {
+              allStoredOrders.push(orderData);
+            }
           }
         } catch (e) {
           console.error('Error parsing order from localStorage:', e);
@@ -125,9 +138,20 @@ const OrderHistory: React.FC = () => {
     }
     
     // Add mock past orders that belong to the current user
-    const mockUserOrders = MOCK_PAST_ORDERS.filter(order => 
-      order.userId === user?.id
-    );
+    // Only if they don't duplicate any existing orders
+    const mockUserOrders = MOCK_PAST_ORDERS.filter(order => {
+      if (order.userId === user?.id) {
+        // Check if this mock order would be a duplicate of any real orders
+        const isDuplicate = [...orders, ...allStoredOrders].some(existingOrder => 
+          existingOrder.orderDate.getTime() === order.orderDate.getTime() && 
+          existingOrder.totalPrice === order.totalPrice &&
+          existingOrder.userId === order.userId
+        );
+        
+        return !isDuplicate;
+      }
+      return false;
+    });
     
     return [...orders, ...allStoredOrders, ...mockUserOrders];
   };
